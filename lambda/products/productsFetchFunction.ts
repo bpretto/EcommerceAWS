@@ -10,7 +10,7 @@ export async function handler(
 
     context: Context
     // context é um objeto que contém informações sobre a execução da função
-    // Lambda, como o nome da função, o nome do log group, o nome do log
+    // Lambda, como o id e nome da função, o nome do log group, o nome do log
     // stream, etc. É injetado pelo próprio AWS Lambda.
 
 ): Promise<APIGatewayProxyResult>
@@ -25,6 +25,13 @@ export async function handler(
 // headers da resposta, etc.
 
 {
+    const lambdaRequestId = context.awsRequestId;
+    // awsRequestId é o id único da execução da função Lambda.
+
+    const apiRequestId = event.requestContext.requestId;
+    // apiRequestId é o id único da requisição feita pelo usuário para a
+    // API Gateway.
+
     const method = event.httpMethod;
     if (event.resource === "/products") {
         if (method === "GET") {
