@@ -32,6 +32,12 @@ export async function handler(
     // apiRequestId é o id único da requisição feita pelo usuário para a
     // API Gateway.
 
+    console.log(`lambdaRequestId: ${lambdaRequestId} \n apiRequestId: ${apiRequestId}`);
+    // Imprime no CloudWatch os ids da execução da função Lambda e da
+    // requisição feita pelo usuário. Gerar logs, em ambiente de produção,
+    // gera custos. Além disso, não se deve colocar informações sensíveis
+    // nos logs, como senhas, tokens, nomes de usuários, ips, etc.
+
     const method = event.httpMethod;
     if (event.resource === "/products") {
         if (method === "GET") {
