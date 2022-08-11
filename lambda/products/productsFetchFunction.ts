@@ -36,7 +36,7 @@ export async function handler(
     // Imprime no CloudWatch os ids da execução da função Lambda e da
     // requisição feita pelo usuário. Gerar logs, em ambiente de produção,
     // gera custos. Além disso, não se deve colocar informações sensíveis
-    // nos logs, como senhas, tokens, nomes de usuários, ips, etc.
+    // nos logs, nomes de usuários, ips, etc.
 
     const method = event.httpMethod;
     if (event.resource === "/products") {

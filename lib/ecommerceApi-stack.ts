@@ -26,6 +26,12 @@ export class EcommerceApiStack extends cdk.Stack {
     constructor(scope: Construct, id: string, props: EcommerceApiStackProps) {
         super(scope, id, props);
 
+        const logGroup = new cwlogs.LogGroup(this, "EcommerceApiLogs");
+        // Cria um grupo de logs para a API Gateway. Será como uma pasta
+        // que armazenará os logs de todas as requisições recebidas pela
+        // API Gateway. Logs são particularmente úteis para depuração de
+        // erros.
+
         const api = new apigateway.RestApi(
             this, // scope
             "EcommerceApi", // id
@@ -33,6 +39,27 @@ export class EcommerceApiStack extends cdk.Stack {
                 restApiName: "Ecommerce API",
                 // Nome da API Gateway. Esse nome será exibido no console
                 // do API Gateway.
+
+                deployOptions: {
+                    accessLogDestination: new apigateway.LogGroupLogDestination(logGroup),
+                    // Define onde serão armazenados os logs das requisições.
+
+                    accessLogFormat: apigateway.AccessLogFormat.jsonWithStandardFields({
+                        // Define o formato dos logs das requisições recebidas.
+                        httpMethod: true,
+                        ip: true,
+                        protocol: true,
+                        requestTime: true,
+                        resourcePath: true,
+                        responseLength: true,
+                        status: true,
+                        caller: true,
+                        user: true,
+                        // Importante ressaltar que as informações sensíveis
+                        // como ips e usuários não devem ser armazenadas em
+                        // logs de ambiente de produção.
+                    }),
+                },
             }
         );
 
