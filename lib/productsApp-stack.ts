@@ -45,7 +45,7 @@ export class ProductsAppStack extends cdk.Stack {
                 // Quantidade de memória alocada para a função Lambda ser
                 // executada.
 
-                timeout: cdk.Duration.seconds(10),
+                timeout: cdk.Duration.seconds(5),
                 // Tempo máximo que a função Lambda pode ser executada.
 
                 bundling: {
