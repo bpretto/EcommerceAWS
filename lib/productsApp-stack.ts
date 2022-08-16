@@ -1,6 +1,7 @@
 import * as lambda from "aws-cdk-lib/aws-lambda";
 import * as lambdaNodejs from "aws-cdk-lib/aws-lambda-nodejs";
 import * as cdk from "aws-cdk-lib";
+import * as dynamodb from "aws-cdk-lib/aws-dynamodb";
 import { Construct } from "constructs";
 
 
@@ -13,12 +14,36 @@ export class ProductsAppStack extends cdk.Stack {
     readonly productsFetchHandler: lambdaNodejs.NodejsFunction;
     // atributo que representa a função Lambda Products Fetch
 
+    readonly productsDdb: dynamodb.Table;
+    // atributo que representa a tabela DynamoDB que armazena os produtos
+
     constructor(scope: Construct, id: string, props?: cdk.StackProps) {
         // Scope é o objeto que representa onde a stack do CDK está inserida.
         // Id é o nome da stack. Props são propriedades opcionais que podem
         // ser passadas para a stack.
 
         super(scope, id, props);
+
+        this.productsDdb = new dynamodb.Table(
+            this, // scope
+            "Products", // id
+            {
+                tableName: "Products", // nome da tabela
+                removalPolicy: cdk.RemovalPolicy.DESTROY,
+                // ação a ser tomada quando a stack for excluída
+                partitionKey: {
+                    name: "id", // nome do atributo da chave primária
+                    type: dynamodb.AttributeType.STRING // tipo do atributo
+                },
+                billingMode: dynamodb.BillingMode.PROVISIONED,
+                // o tipo de cálculo de custo da tabela
+                readCapacity: 1, // capacidade de leitura por segundo
+                writeCapacity: 1 // capacidade de escrita por segundo
+            } // configurações da tabela
+        );
+        // Cria uma tabela DynamoDB para armazenar os produtos
+        // É criada antes da função Lambda Products Fetch, pois a função
+        // Products Fetch depende da tabela para buscar os produtos     
 
         this.productsFetchHandler = new lambdaNodejs.NodejsFunction(
             this,
