@@ -12,6 +12,9 @@ interface EcommerceApiStackProps extends cdk.StackProps {
 
     productsFetchHandler: lambdaNodejs.NodejsFunction;
     // Atributo que representa a função Lambda Products Fetch.
+
+    productsAdminHandler: lambdaNodejs.NodejsFunction;
+    // Atributo que representa a função Lambda Products Admin.
 };
 
 export class EcommerceApiStack extends cdk.Stack {
@@ -66,7 +69,8 @@ export class EcommerceApiStack extends cdk.Stack {
         const productsFetchIntegration = new apigateway.LambdaIntegration(
             props.productsFetchHandler,
             // Função Lambda que será invocada quando a API Gateway receber
-            // uma requisição HTTP para o endpoint /products.
+            // uma requisição HTTP GET para os endpoints /products e
+            // /products/{id}.
         );
         // Cria um objeto que representa a integração da API Gateway com
         // a função Lambda Products Fetch. A integração é responsável por
@@ -74,12 +78,41 @@ export class EcommerceApiStack extends cdk.Stack {
         // requisição HTTP para o endpoint /products e também por converter
         // a resposta da função Lambda em uma resposta HTTP.
 
+        const productsAdminIntegration = new apigateway.LambdaIntegration(
+            props.productsAdminHandler,
+            // Função Lambda que será invocada quando a API Gateway receber
+            // uma requisição HTTP POST, PUT ou DELETE para o endpoint /products.
+        );
+
+
         const productsResource = api.root.addResource("products");
         // "/products"
+        const productIdResourse = productsResource.addResource("{id}")
+        // "/products/{id}"
 
         productsResource.addMethod("GET", productsFetchIntegration);
         // "/products" GET
-        // GET em /products -> productsFetchIntegration -> productsFetchHandler
+        productIdResourse.addMethod("GET", productsFetchIntegration);
+        // "/products/{id}" GET
+        // GET em /products ou /products/{id} -> productsFetchIntegration
+        // -> productsFetchHandler
+
+        productsResource.addMethod("POST", productsAdminIntegration);
+        // "/products" POST
+        productIdResourse.addMethod("PUT", productsAdminIntegration);
+        // "/products/{id}" PUT
+        productIdResourse.addMethod("DELETE", productsAdminIntegration);
+        // "/products/{id}" DELETE
+        // POST, PUT ou DELETE em /products ou /products/{id} ->
+        // productsAdminIntegration -> productsAdminHandler
+
+
+
+
+
+
+
+
 
     }
 }

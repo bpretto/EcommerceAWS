@@ -39,6 +39,8 @@ const ecommerceApiStack = new EcommerceApiStack(
   {
     productsFetchHandler: productsAppStack.productsFetchHandler,
     // Atributo que representa a função Lambda Products Fetch.
+    productsAdminHandler: productsAppStack.productsAdminHandler,
+    // Atributo que representa a função Lambda Products Admin.
     tags: tags,
     env: env,
   }
