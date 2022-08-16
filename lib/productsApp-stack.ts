@@ -12,10 +12,13 @@ export class ProductsAppStack extends cdk.Stack {
     // além de uma tabela DynamoDB para armazenar os produtos. 
 
     readonly productsFetchHandler: lambdaNodejs.NodejsFunction;
-    // atributo que representa a função Lambda Products Fetch
+    // Atributo que representa a função Lambda Products Fetch.
+
+    readonly productsAdminHandler: lambdaNodejs.NodejsFunction;
+    // Atributo que representa a função Lambda Products Admin.
 
     readonly productsDdb: dynamodb.Table;
-    // atributo que representa a tabela DynamoDB que armazena os produtos
+    // Atributo que representa a tabela DynamoDB que armazena os produtos.
 
     constructor(scope: Construct, id: string, props?: cdk.StackProps) {
         // Scope é o objeto que representa onde a stack do CDK está inserida.
@@ -103,6 +106,30 @@ export class ProductsAppStack extends cdk.Stack {
         // Na AWS, a permissão de acesso à um banco de dados é controlado no papel IAM
         // da função Lambda, e não no papel IAM da tabela. Ou seja, nesta linha de
         // código, o CDK pega o papel IAM da função Lambda Products Fetch e adiciona a
-        // permissão de leitura de dados da tabela Products. 
+        // permissão de leitura de dados da tabela Products.
+
+        this.productsAdminHandler = new lambdaNodejs.NodejsFunction(
+            this, // scope
+            "ProductsAdminFunction", // id
+            {
+                functionName: "ProductsAdminFunction",
+                entry: "lambda/products/productsAdminFunction.ts",
+                handler: "handler",
+                memorySize: 128,
+                timeout: cdk.Duration.seconds(5),
+                bundling: {
+                    minify: true,
+                    sourceMap: false,
+                },
+                environment: {
+                    PRODUCTS_DDB: this.productsDdb.tableName,
+                },
+            }
+        );
+        // Cria a função Lambda Products Admin.
+
+        this.productsDdb.grantWriteData(this.productsAdminHandler);
+        // Permite que a função Lambda Products Admin escreva dados na tabela Products.
+
     }
 }
