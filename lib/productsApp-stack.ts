@@ -90,7 +90,19 @@ export class ProductsAppStack extends cdk.Stack {
                     // facilitar a depuração do código da função Lambda, pois
                     // o arquivo de mapa de origem é muito grande.
                 },
+                environment: {
+                    // Configurações de ambiente da função Lambda.
+                    PRODUCTS_DDB: this.productsDdb.tableName,
+                    // Nome da tabela DynamoDB que armazena os produtos.
+                },
             }
         );
+
+        this.productsDdb.grantReadData(this.productsFetchHandler);
+        // Permite que a função Lambda Products Fetch leia os dados da tabela Products.
+        // Na AWS, a permissão de acesso à um banco de dados é controlado no papel IAM
+        // da função Lambda, e não no papel IAM da tabela. Ou seja, nesta linha de
+        // código, o CDK pega o papel IAM da função Lambda Products Fetch e adiciona a
+        // permissão de leitura de dados da tabela Products. 
     }
 }
