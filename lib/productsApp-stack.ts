@@ -2,6 +2,7 @@ import * as lambda from "aws-cdk-lib/aws-lambda";
 import * as lambdaNodejs from "aws-cdk-lib/aws-lambda-nodejs";
 import * as cdk from "aws-cdk-lib";
 import * as dynamodb from "aws-cdk-lib/aws-dynamodb";
+import * as ssm from "aws-cdk-lib/aws-ssm";
 import { Construct } from "constructs";
 
 
@@ -46,7 +47,23 @@ export class ProductsAppStack extends cdk.Stack {
         );
         // Cria uma tabela DynamoDB para armazenar os produtos
         // É criada antes da função Lambda Products Fetch, pois a função
-        // Products Fetch depende da tabela para buscar os produtos     
+        // Products Fetch depende da tabela para buscar os produtos
+
+        const productsLayerArn = ssm.StringParameter.valueForStringParameter(
+            this, // scope
+            "ProductsLayerVersionArn" // nome do parâmetro
+        )
+        // Obtém o valor do parâmetro que armazena a versão da layer.
+        // É necessário obter o valor do parâmetro para que a layer seja
+        // utilizada nas funções Lambda.
+        const productsLayer = lambda.LayerVersion.fromLayerVersionArn(
+            this, // scope
+            "ProductsLayer", // id
+            productsLayerArn // arn da layer
+        );
+        // Busca exatamente a layer que foi criada em ./productsAppLayers-stack.ts.
+        // é importado dessa forma, e não como parâmetro, para que não haja dependência
+        // direta entre as stacks ProductsAppLayersStack e ProductsAppStack.
 
         this.productsFetchHandler = new lambdaNodejs.NodejsFunction(
             this,
@@ -98,6 +115,8 @@ export class ProductsAppStack extends cdk.Stack {
                     PRODUCTS_DDB: this.productsDdb.tableName,
                     // Nome da tabela DynamoDB que armazena os produtos.
                 },
+                layers: [productsLayer],
+                // Layers que serão utilizadas na função Lambda.
             }
         );
 
@@ -124,6 +143,7 @@ export class ProductsAppStack extends cdk.Stack {
                 environment: {
                     PRODUCTS_DDB: this.productsDdb.tableName,
                 },
+                layers: [productsLayer],
             }
         );
         // Cria a função Lambda Products Admin.

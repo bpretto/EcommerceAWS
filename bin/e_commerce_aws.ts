@@ -3,6 +3,7 @@ import 'source-map-support/register';
 import * as cdk from 'aws-cdk-lib';
 import { ProductsAppStack } from '../lib/productsApp-stack';
 import { EcommerceApiStack } from '../lib/ecommerceApi-stack';
+import { ProductsAppLayersStack } from '../lib/productsAppLayers-stack';
 
 
 const app = new cdk.App();
@@ -23,6 +24,16 @@ const tags = {
 // Tags são úteis para identificar os recursos criados pela aplicação
 // e para aplicar políticas de custo e segurança.
 
+const productsAppLayersStack = new ProductsAppLayersStack(
+  app, // scope
+  'ProductsAppLayersStack', // id
+  {
+    tags: tags,
+    env: env,
+  }
+  // props  
+);
+
 const productsAppStack = new ProductsAppStack(
   app, // scope
   "ProductsApp", // id
@@ -31,7 +42,23 @@ const productsAppStack = new ProductsAppStack(
     env: env,
   }
   // props
-)
+);
+
+productsAppStack.addDependency(productsAppLayersStack);
+
+// -----------------------------------------------------------------------------
+// Importante ressaltar que não há dependência direta entre as stacks
+// ProductsAppLayersStack e ProductsAppStack, pois nesta, foi utilizado o ssm
+// para obter o valor do parâmetro ProductsLayerVersionArn, criado naquela.
+// Portanto, é possível fazer alterações em ProductsAppLayersStack sem que
+// a ProductsAppStack seja afetada. A dependência acima é indireta, e serve
+// apenas para que ProductsAppStack possa ser criada antes de
+// ProductsAppLayersStack. Não é uma dependência "forte", pois é possível
+// apagar a ProductsAppLayersStack e a ProductsAppStack continuar sendo
+// executada, visto que ProductsAppLayersStack foi configurada para ser mantida
+// em caso de remoção (removalPolicy). O mesmo ocorre caso uma nova versão da
+// ProductsAppLayersStack seja criada.
+// -----------------------------------------------------------------------------
 
 const ecommerceApiStack = new EcommerceApiStack(
   app, // scope
