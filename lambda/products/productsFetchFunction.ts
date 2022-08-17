@@ -1,4 +1,3 @@
-import { Identity } from "aws-cdk-lib/aws-ses";
 import { APIGatewayProxyEvent, APIGatewayProxyResult, Context } from "aws-lambda";
 
 export async function handler(
