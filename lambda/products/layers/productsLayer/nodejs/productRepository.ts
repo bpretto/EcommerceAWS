@@ -35,4 +35,24 @@ export class ProductRepository {
     // Operação com fins didáticos, o ideal não é buscar todos
     // os produtos, sem nenhum tipo de filtro.
 
+    async getProductById(productId: string): Promise<Product> {
+        const data = await this.ddbClient.get({
+            // Não se deve utilizar o método scan para buscar um produto,
+            // pois, caso feito isso, o DynamoDB irá varrer toda a tabela
+            // e retornar todos os produtos que condizem com o filtro. Ao
+            // utilizar o método get, o DynamoDB só retornará o produto que
+            // corresponde ao id informado, sem nem se atentar ao resto da
+            // tabela. Isso é menos custoso em termos monetários e temporais.
+            TableName: this.productsDdb,
+            Key: {
+                id: productId, // Chave primária do elemento.
+            },
+        }).promise();
+        if (data.Item) { // Se o produto existe, retorna o produto.
+            return data.Item as Product;
+        } else { // Se o produto não existe, retorna um erro.
+            throw new Error("Product not found");
+        }
+    }
+
 }
