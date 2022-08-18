@@ -55,4 +55,13 @@ export class ProductRepository {
         }
     }
 
+    async create(product: Product): Promise<Product> {
+        product.id = uuid(); // Gerar um id único para o produto.
+        await this.ddbClient.put({
+            TableName: this.productsDdb,
+            Item: product,
+        }).promise();
+        return product;
+    }
+
 }
