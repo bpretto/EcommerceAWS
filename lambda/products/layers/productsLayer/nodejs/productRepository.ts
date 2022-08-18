@@ -55,7 +55,7 @@ export class ProductRepository {
         }
     }
 
-    async create(product: Product): Promise<Product> {
+    async createProduct(product: Product): Promise<Product> {
         product.id = uuid(); // Gerar um id único para o produto.
         await this.ddbClient.put({
             TableName: this.productsDdb,
@@ -64,4 +64,25 @@ export class ProductRepository {
         return product;
     }
 
+    async deleteProduct(productId: string): Promise<Product> {
+        const data = await this.ddbClient.delete({
+            TableName: this.productsDdb,
+            Key: {
+                id: productId,
+            },
+            ReturnValues: "ALL_OLD",
+            // Se o produto for encontrado, o DynamoDB o apagará e retornará
+            // todos os seus dados.
+        }).promise();
+        if (data.Attributes) {
+            // Se o produto for encontrado, data.Attributes conterá os seus dados.
+            return data.Attributes as Product;
+        } else {
+            throw new Error("Product not found");
+        }
+        // É possível primeiro buscar o produto com a função getProductById,
+        // e após isso, apagar o produto com a função deleteProduct, porém,
+        // é mais custoso, pois é necessário fazer duas operações. Ao fazer
+        // da forma acima, apenas uma operação é necessária.
+    }
 }
