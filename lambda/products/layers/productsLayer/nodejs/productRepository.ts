@@ -85,4 +85,28 @@ export class ProductRepository {
         // é mais custoso, pois é necessário fazer duas operações. Ao fazer
         // da forma acima, apenas uma operação é necessária.
     }
+
+    async updateProduct(productId: string, product: Product): Promise<Product> {
+        const data = await this.ddbClient.update({
+            TableName: this.productsDdb,
+            Key: {
+                id: productId,
+            },
+            ConditionExpression: "attribute_exists(id)",
+            // Se o produto for encontrado, o DynamoDB fará a atualização.
+            ReturnValues: "UPDATED_NEW",
+            // Retorna os dados atualizados.
+            UpdateExpression: "set productName = :productName, code = :code, price = :price, model = :model",
+            // Atualiza os dados do produto.
+            ExpressionAttributeValues: {
+                ":productName": product.productName,
+                ":code": product.code,
+                ":price": product.price,
+                ":model": product.model,
+            },
+            // Passa os valores para atualizar o produto.
+        }).promise();
+        data.Attributes!.id = productId; // Adiciona o id do produto no retorno.
+        return data.Attributes as Product;
+    }
 }
