@@ -1,4 +1,13 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult, Context } from "aws-lambda";
+import { DynamoDB } from "aws-sdk";
+import { ProductRepository } from "/opt/nodejs/productsLayer";
+
+const productsDdb = process.env.PRODUCTS_DDB!;
+// Nome da tabela DynamoDB que armazena os produtos.
+const productsDdbClient = new DynamoDB.DocumentClient();
+// Instanciação do cliente do DynamoDB.
+const productsRepository = new ProductRepository(productsDdbClient, productsDdb);
+// Instanciação do repositório de produtos.
 
 export async function handler(
     // Método que será invocado quando a função Lambda for invocada.
@@ -43,21 +52,30 @@ export async function handler(
         if (method === "GET") {
             console.log("GET /products");
 
+            const products = await productsRepository.getAllProducts();
+            // Busca todos os produtos no banco de dados.
+
             return {
                 statusCode: 200,
-                body: JSON.stringify({
-                    message: "GET /products",
-                }),
+                body: JSON.stringify(products),
             }
         }
     } else if (event.resource === "/products/{id}") {
         const productId = event.pathParameters!.id as string
         console.log(`GET /products/${productId}`);
-        return {
-            statusCode: 200,
-            body: JSON.stringify({
-                message: `GET /products/${productId}`,
-            }),
+
+        try {
+            const product = await productsRepository.getProductById(productId);
+            return {
+                statusCode: 200,
+                body: JSON.stringify(product),
+            }
+        } catch (error) {
+            console.error((<Error>error).message)
+            return {
+                statusCode: 404,
+                body: (<Error>error).message,
+            }
         }
     }
 
