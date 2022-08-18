@@ -94,6 +94,8 @@ export class ProductRepository {
             },
             ConditionExpression: "attribute_exists(id)",
             // Se o produto for encontrado, o DynamoDB fará a atualização.
+            // Caso contrário, o DynamoDB retornará um erro do tipo 
+            // ConditionalCheckFailedException.
             ReturnValues: "UPDATED_NEW",
             // Retorna os dados atualizados.
             UpdateExpression: "set productName = :productName, code = :code, price = :price, model = :model",
